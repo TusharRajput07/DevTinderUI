@@ -1,7 +1,12 @@
+import Header from "./Header";
+
 const Feed = () => {
   return (
-    <div>Feed</div>
-  )
-}
+    <>
+      <Header />
+      <div>Feed</div>
+    </>
+  );
+};
 
-export default Feed
+export default Feed;

@@ -3,11 +3,16 @@ import Feed from "./Feed";
 import Login from "./Login";
 import Profile from "./Profile";
 import Error from "./Error";
+import Home from "./Home";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
     {
       path: "/",
+      element: <Home />,
+    },
+    {
+      path: "/Feed",
       element: <Feed />,
     },
     {
