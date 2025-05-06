@@ -26,7 +26,7 @@ const Home = () => {
           <Link to="/login">
             <div className="bg-[#404040] text-white text-xl font-medium mt-8 w-fit rounded-full cursor-pointer hover:shadow-lg bg-gradient-to-r  from-[#DD8E71] to-[#7e432d] animate-gradient">
               <div className="px-10 py-4 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
-                Create Account
+                Let's get started
               </div>
             </div>
           </Link>
