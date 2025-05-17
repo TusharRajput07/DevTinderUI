@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,6 +21,13 @@ const Header = () => {
   const user = useSelector((store) => store?.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+  }, []);
 
   const [openDialog, setOpenDialog] = useState(false);
   const handleDialog = () => {
@@ -38,76 +45,96 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-[#f0f0f0] bg-gradient-to-b from-[#a6a6a6]">
-      <div className="max-w-7xl mx-auto flex justify-between items-center py-4 px-14">
+    <header className="w-full bg-[#291424] bg-gradient-to-b from-[#140310]">
+      <div className="max-w-7xl mx-auto flex justify-between items-center py-2 px-14">
         {/* Logo */}
-        <h1 className="text-2xl font-bold text-gray-900">DevTinder</h1>
-
+        <div className="flex flex-col justify-center text-[#f0f0f0]">
+          {user && (
+            <span
+              className={`text-xs font-light transition-all duration-700 ease-in-out delay-300 ${
+                isVisible
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-20"
+              }`}
+            >
+              {user?.firstName + " " + user?.lastName}'s
+            </span>
+          )}
+          <h1 className="text-2xl font-bold">DevTinder</h1>
+        </div>
         {/* Navigation */}
         <nav>
-          <ul className="flex items-center space-x-6 text-gray-700 font-medium">
-            <Link to="/feed">
+          {user && (
+            <ul className="flex items-center space-x-6 font-medium">
+              <Link to="/feed">
+                <li>
+                  <Tooltip title="Explore" arrow>
+                    <IconButton>
+                      <DehazeOutlinedIcon className="text-[#b5b3b3]" />
+                    </IconButton>
+                  </Tooltip>
+                </li>
+              </Link>
+              <Link to="/profile">
+                <li>
+                  <Tooltip title="Your Profile" arrow>
+                    <IconButton>
+                      <Person2OutlinedIcon className="text-[#b5b3b3]" />
+                    </IconButton>
+                  </Tooltip>
+                </li>
+              </Link>
+
+              <Link to="/requests">
+                <li>
+                  <Tooltip title="Connection Requests" arrow>
+                    <IconButton>
+                      <SocialDistanceOutlinedIcon className="text-[#b5b3b3]" />
+                    </IconButton>
+                  </Tooltip>
+                </li>
+              </Link>
+
+              <Link to="/matches">
+                <li>
+                  <Tooltip title="Your Matches" arrow>
+                    <IconButton>
+                      <FavoriteBorderOutlinedIcon className="text-[#b5b3b3]" />
+                    </IconButton>
+                  </Tooltip>
+                </li>
+              </Link>
+
               <li>
-                <Tooltip title="Explore" arrow>
+                <Tooltip title="Chats" arrow>
                   <IconButton>
-                    <DehazeOutlinedIcon />
+                    <ChatBubbleOutlineIcon className="text-[#b5b3b3]" />
                   </IconButton>
                 </Tooltip>
               </li>
-            </Link>
-            <Link to="/profile">
-              <li>
-                <Tooltip title="Your Profile" arrow>
+              {user && (
+                <li>
+                  <span className="hover:text-gray-900 transition italic font-bold bg-[#7e2971] text-gray-200 p-1 rounded-sm">
+                    Hello {user?.firstName}
+                  </span>
+                </li>
+              )}
+
+              <div
+                className="mb-1 cursor-pointer hover:text-red-500"
+                onClick={handleDialog}
+              >
+                <Tooltip title="Logout" arrow>
                   <IconButton>
-                    <Person2OutlinedIcon />
+                    <LogoutIcon
+                      className="text-[#b5b3b3]"
+                      fontSize={isLarge ? "medium" : "small"}
+                    />
                   </IconButton>
                 </Tooltip>
-              </li>
-            </Link>
-            <li>
-              <Tooltip title="Connection Requests" arrow>
-                <IconButton>
-                  <SocialDistanceOutlinedIcon />
-                </IconButton>
-              </Tooltip>
-            </li>
-
-            <Link to="/matches">
-              <li>
-                <Tooltip title="Your Matches" arrow>
-                  <IconButton>
-                    <FavoriteBorderOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-              </li>
-            </Link>
-
-            <li>
-              <Tooltip title="Chats" arrow>
-                <IconButton>
-                  <ChatBubbleOutlineIcon />
-                </IconButton>
-              </Tooltip>
-            </li>
-            {user && (
-              <li>
-                <span className="hover:text-gray-900 transition italic font-bold bg-[#7e2971] text-gray-200 p-1 rounded-sm">
-                  Hello {user?.firstName}
-                </span>
-              </li>
-            )}
-
-            <div
-              className="mb-1 cursor-pointer hover:text-red-500"
-              onClick={handleDialog}
-            >
-              <Tooltip title="Logout" arrow>
-                <IconButton>
-                  <LogoutIcon fontSize={isLarge ? "medium" : "small"} />
-                </IconButton>
-              </Tooltip>
-            </div>
-          </ul>
+              </div>
+            </ul>
+          )}
         </nav>
 
         <SignoutDialog

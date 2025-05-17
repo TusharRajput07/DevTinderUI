@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const matchesSlice = createSlice({
   name: "matches",
-  initialState: null,
+  initialState: [],
   reducers: {
     addMatches: (state, action) => {
       return action.payload;

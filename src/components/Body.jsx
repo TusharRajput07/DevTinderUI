@@ -8,12 +8,15 @@ import Login from "./Login";
 import Profile from "./Profile";
 import Error from "./Error";
 import Home from "./Home";
+import Matches from "./Matches";
+import Requests from "./Requests";
+import Recommend from "./Recommend";
+
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { addUser } from "../utils/userSlice";
 import { useEffect } from "react";
-import Matches from "./Matches";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -38,6 +41,14 @@ const Body = () => {
       element: <Matches />,
     },
     {
+      path: "/requests",
+      element: <Requests />,
+    },
+    {
+      path: "/recommend",
+      element: <Recommend />,
+    },
+    {
       path: "*",
       element: <Error />,
     },
@@ -53,7 +64,7 @@ const Body = () => {
       const res = await axios.get(BASE_URL + "/profile/view", {
         withCredentials: true,
       });
-      dispatch(addUser(res.data));
+      dispatch(addUser(res?.data));
     } catch (err) {
       if (err.status === 401) {
         // navigate("/login");

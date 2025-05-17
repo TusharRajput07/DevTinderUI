@@ -1,13 +1,13 @@
 import axios from "axios";
-import { BASE_URL } from "../utils/constants";
 import Header from "./Header";
+import { BASE_URL } from "../utils/constants";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addMatches } from "../utils/matchesSlice";
-import MatchCard from "./MatchCard";
+import { addRequests } from "../utils/requestsSlice";
+import RequestCard from "./RequestCard";
 import SplitText from "./SplitText";
 
-const Matches = () => {
+const Requests = () => {
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -16,25 +16,25 @@ const Matches = () => {
   }, []);
 
   const dispatch = useDispatch();
-  const userMatches = useSelector((store) => store.matches);
-  console.log(userMatches);
+  const userRequests = useSelector((store) => store.requests);
 
-  const getMatches = async () => {
+  const getRequests = async () => {
     try {
-      const res = await axios.get(BASE_URL + "/user/connections", {
+      const res = await axios.get(BASE_URL + "/user/requests/recieved", {
         withCredentials: true,
       });
-      dispatch(addMatches(res?.data?.data));
+      console.log(res?.data?.data);
+      dispatch(addRequests(res?.data?.data));
     } catch (err) {
       console.log(err);
     }
   };
 
   useEffect(() => {
-    getMatches();
+    getRequests();
   }, []);
 
-  if (!userMatches || userMatches.length === 0) {
+  if (!userRequests || userRequests.length === 0) {
     return (
       <>
         <Header />
@@ -46,11 +46,10 @@ const Matches = () => {
                 : "opacity-0 translate-x-20"
             }`}
           >
-            <SplitText>No Matches yet!</SplitText>
-            <SplitText>Keep Exploring.</SplitText>
-            <SplitText className="text-3xl font-bold">
-              Boost your chances! A more detailed profile helps the right
-              connections find you. ✨
+            <SplitText>No connection requests.</SplitText>
+            <SplitText>Check back later!</SplitText>
+            <SplitText className="text-3xl">
+              New connection requests will appear here. ☑️
             </SplitText>
           </div>
         </div>
@@ -61,12 +60,14 @@ const Matches = () => {
   return (
     <>
       <Header />
-      <div className="bg-[#291424] text-[#f0f0f0] min-h-screen">
-        <div className="text-3xl font-bold text-center py-5">Your Matches</div>
+      <div className="bg-[#f0f0f0] min-h-screen">
+        <div className="text-3xl font-bold text-center py-5">
+          Connection Requests
+        </div>
         <div className="w-full flex flex-col items-center">
           {/*cards*/}
-          {userMatches.map((match) => (
-            <MatchCard userData={match} key={match._id} />
+          {userRequests.map((request) => (
+            <RequestCard userData={request} key={request._id} />
           ))}
         </div>
       </div>
@@ -74,4 +75,4 @@ const Matches = () => {
   );
 };
 
-export default Matches;
+export default Requests;
