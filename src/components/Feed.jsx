@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { addFeed } from "../utils/feedSlice";
 import ProfileCard from "./profileCard";
 import SplitText from "./SplitText";
+import { addRequests } from "../utils/requestsSlice";
 
 const Feed = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,8 +17,10 @@ const Feed = () => {
   }, []);
   const dispatch = useDispatch();
   const feedData = useSelector((store) => store.feed);
+  const requestsData = useSelector((store) => store.requests);
   console.log(feedData);
 
+  // gets feedData and stores them to the store
   const getFeed = async () => {
     if (feedData) return;
     try {
@@ -31,8 +34,23 @@ const Feed = () => {
     }
   };
 
+  // gets connection requests and store them to the store
+  const getRequests = async () => {
+    if (requestsData.length > 0) return;
+    try {
+      const res = await axios.get(BASE_URL + "/user/requests/recieved", {
+        withCredentials: true,
+      });
+      console.log(res?.data?.data);
+      dispatch(addRequests(res?.data?.data));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     getFeed();
+    getRequests();
   }, []);
 
   if (!feedData) return;
@@ -40,7 +58,6 @@ const Feed = () => {
   if (!feedData || feedData.length === 0) {
     return (
       <>
-        <Header />
         <div className="min-h-screen bg-[#291424] text-[#f0f0f0] flex justify-center items-center px-[20vw]">
           <div
             className={`text-xl md:text-5xl font-extrabold text-center transition-all duration-700 ease-in-out delay-150 ${
@@ -51,7 +68,7 @@ const Feed = () => {
           >
             <SplitText>You are all caught up!</SplitText>
             <SplitText>Take a break from the app.</SplitText>
-            <SplitText className="text-2xl font-bold">
+            <SplitText className="text-lg md:text-3xl font-bold">
               Looks like things are a bit quiet right now. New developers and
               projects are joining all the time! ✨
             </SplitText>
@@ -63,11 +80,8 @@ const Feed = () => {
 
   return (
     <>
-      <Header />
       <div className="min-h-screen flex w-full justify-center pt-5 pb-10 bg-[#291424]  text-[#f0f0f0]">
-        <div className="w-1/2 min-h-screen relative bg-[#756671] rounded-2xl flex flex-col items-center pt-5 pb-10">
-          {feedData && <ProfileCard userData={feedData[0]} />}
-        </div>
+        {feedData && <ProfileCard userData={feedData[0]} />}
       </div>
     </>
   );

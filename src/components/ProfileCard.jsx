@@ -7,62 +7,14 @@ import { useDispatch } from "react-redux";
 import { removeUserFromFeed } from "../utils/feedSlice";
 import { useEffect, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useLocation } from "react-router-dom";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const ProfileCard = ({ userData }) => {
   const dispatch = useDispatch();
-  const [slideDirection, setSlideDirection] = useState("");
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      setIsVisible(true);
-    });
-  }, []);
-
-  const handleClick = async (type) => {
-    // Set animation direction
-    setSlideDirection(type);
-  };
-
-  const handleAnimationEnd = async () => {
-    // Call API here (interested or ignored)
-    try {
-      await axios.post(
-        `${BASE_URL}/request/send/${slideDirection}/${userData._id}`,
-        {},
-        { withCredentials: true }
-      );
-
-      // Now remove the user from Redux
-      dispatch(removeUserFromFeed(_id));
-    } catch (err) {
-      if (
-        err.response?.status === 400 &&
-        err.response.data?.message === "connection request already exists!"
-      ) {
-        console.log("Connection request already exists.");
-        // Optional: Show a toast or alert
-      } else {
-        console.error(err);
-      }
-    }
-
-    setSlideDirection("");
-  };
-
-  // const sendRequest = async (status, _id) => {
-  //   try {
-  //     const res = await axios.post(
-  //       BASE_URL + "/request/send/" + status + "/" + _id,
-  //       {},
-  //       { withCredentials: true }
-  //     );
-  //     console.log(res);
-  //     dispatch(removeUserFromFeed(_id));
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
+  const location = useLocation();
 
   const {
     firstName,
@@ -73,36 +25,63 @@ const ProfileCard = ({ userData }) => {
     photoURL,
     skills,
     hobbies,
+    userLocation,
     _id,
   } = userData;
-  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Load image manually before showing the card
+  useEffect(() => {
+    setImageLoaded(false);
+    setIsVisible(false);
+
+    const img = new Image();
+    img.onload = () => {
+      setImageLoaded(true);
+      requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+    };
+    img.src = photoURL || defaultProfile;
+
+    return () => {
+      img.onload = null; // cleanup
+    };
+  }, [userData._id]);
+
+  const sendRequest = async (status, _id) => {
+    if (location.pathname === "/profile") return;
+    try {
+      const res = await axios.post(
+        BASE_URL + "/request/send/" + status + "/" + _id,
+        {},
+        { withCredentials: true }
+      );
+      console.log(res);
+      dispatch(removeUserFromFeed(_id));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (!imageLoaded) {
+    return (
+      <div className="w-80 h-[90vh] max-w-sm bg-[#4f404b] rounded-2xl flex items-center justify-center my-5">
+        <CircularProgress style={{ color: "white" }} />
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`w-80 max-w-sm bg-[#4f404b] 0F0F0F text-[#f0f0f0] rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden flex flex-col justify-between my-5 p-2 pb-4 cursor-pointer transition-all duration-500 ease-in-out ${
-        slideDirection === "ignored"
-          ? "-translate-x-96 opacity-0"
-          : slideDirection === "interested"
-          ? "translate-x-96 opacity-0"
-          : "translate-x-0 opacity-100"
-      }  ${
+      className={`w-80 h-fit max-w-sm bg-[#4f404b] hover:bg-[#5c4a57] text-[#f0f0f0] rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden flex flex-col justify-between my-5 p-2 pb-4 cursor-pointer transition-all duration-500 ease-in-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-40"
       }`}
-      onTransitionEnd={slideDirection ? handleAnimationEnd : null}
     >
       {/* Image */}
-      <div className="h-60 w-full overflow-hidden">
-        {!imageLoaded && (
-          <div className="w-full h-full rounded-xl bg-[#848383] flex items-center justify-center">
-            <CircularProgress style={{ color: "white" }} />
-          </div>
-        )}
-
+      <div className="h-70 w-full overflow-hidden">
         <img
-          className={`object-cover w-full h-full rounded-xl transition-opacity duration-300 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
+          className="object-cover w-full h-full rounded-xl"
           src={photoURL || defaultProfile}
-          onLoad={() => setImageLoaded(true)}
           alt="User profile"
         />
       </div>
@@ -116,8 +95,16 @@ const ProfileCard = ({ userData }) => {
           </h2>
           <span className="text-sm">{gender}</span>
         </div>
+
         {bio && (
           <p className="text-sm bg-[#4a3845] rounded-xl py-1 px-2">{bio}</p>
+        )}
+
+        {userLocation && (
+          <div className="text-sm text-[#acabac] bg-[#4a3845] rounded-xl py-1 px-2">
+            <LocationOnIcon fontSize="small" className="pb-1" />
+            <span>{userLocation}</span>
+          </div>
         )}
 
         {skills && (
@@ -126,48 +113,29 @@ const ProfileCard = ({ userData }) => {
             <span className="text-xs">{skills}</span>
           </div>
         )}
-
         {hobbies && (
           <div className="bg-[#4a3845] rounded-xl py-1 px-2">
             <div className="font-bold text-sm">My hobbies beyond work:</div>
             <span className="text-xs">{hobbies}</span>
           </div>
         )}
-
-        <div></div>
       </div>
 
       {/* Buttons */}
       <div className="flex justify-between px-3 gap-4">
         <div
-          // onClick={() => sendRequest("interested", _id)}
-          onClick={() => handleClick("ignored")}
+          onClick={() => sendRequest("ignored", _id)}
           className="bg-[#222222] rounded-full p-2 text-white cursor-pointer hover:text-red-300 transition-all hover:shadow-2xl"
         >
           <ClearIcon fontSize="large" />
         </div>
         <div
-          // onClick={() => sendRequest("ignored", _id)}
-          onClick={() => handleClick("interested")}
+          onClick={() => sendRequest("interested", _id)}
           className="bg-[#4b1745] rounded-full p-2 text-white cursor-pointer hover:text-red-300 transition-all hover:shadow-2xl"
         >
           <FavoriteIcon fontSize="large" />
         </div>
       </div>
-
-      {/* <div
-        onClick={() => sendRequest("interested", _id)}
-        className="bg-[#4b1745] rounded-full p-2 text-white cursor-pointer hover:text-red-300 transition-all hover:shadow-2xl w-full mb-2"
-      >
-        <FavoriteIcon fontSize="large" /> Interested
-      </div>
-
-      <div
-        onClick={() => sendRequest("ignored", _id)}
-        className="bg-[#222222] rounded-full p-2 text-white cursor-pointer hover:text-red-300 transition-all hover:shadow-2xl w-full"
-      >
-        <ClearIcon fontSize="large" /> Pass
-      </div> */}
     </div>
   );
 };

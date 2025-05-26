@@ -8,7 +8,6 @@ function App() {
     <Provider store={appStore}>
       <div>
         <Body />
-        <Footer />
       </div>
     </Provider>
   );

@@ -6,6 +6,7 @@ import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import SplitText from "./SplitText";
+import FooterHome from "./FooterHome";
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -132,12 +133,12 @@ const Login = () => {
   return (
     <>
       <HeaderHome />
-      <div className="px-10 md:px-40 py-30 bg-[#291424]  text-[#f0f0f0] ">
+      <div className="px-6 md:px-40 py-20 md:py-30 bg-[#291424]  text-[#f0f0f0] ">
         {/* containers */}
         <div className="md:flex transition-all duration-700 ease-in-out">
           {/* left container */}
           <div
-            className={`w-full md:w-1/2 flex flex-col justify-center gap-3 text-4xl font-extrabold transition-all duration-700 ease-in-out delay-150 ${
+            className={`w-full md:w-1/2 flex flex-col justify-center gap-3 text-3xl md:text-4xl font-extrabold transition-all duration-700 ease-in-out delay-150 text-center md:text-left pb-3 md:pb-0 ${
               isVisible
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 -translate-x-20"
@@ -155,7 +156,7 @@ const Login = () => {
                 : "opacity-0 translate-x-20"
             }`}
           >
-            <div className="text-xl font-semibold">
+            <div className="text-lg md:text-xl font-semibold">
               {isSignUp ? "Create New Account" : "Resume your journey"}
             </div>
             <form className="w-full">
@@ -201,6 +202,7 @@ const Login = () => {
 
               <div className="w-full relative">
                 <input
+                  // type="password"
                   ref={passwordRef}
                   name="user_password"
                   placeholder="your password"
@@ -241,6 +243,7 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <FooterHome />
     </>
   );
 };

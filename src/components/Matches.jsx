@@ -37,10 +37,9 @@ const Matches = () => {
   if (!userMatches || userMatches.length === 0) {
     return (
       <>
-        <Header />
         <div className="min-h-screen bg-[#291424] text-[#f0f0f0] flex justify-center items-center px-[20vw]">
           <div
-            className={`text-xl md:text-5xl font-extrabold text-center transition-all duration-700 ease-in-out delay-150 ${
+            className={`text-2xl md:text-5xl font-extrabold text-center transition-all duration-700 ease-in-out delay-150 ${
               isVisible
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 translate-x-20"
@@ -48,7 +47,7 @@ const Matches = () => {
           >
             <SplitText>No Matches yet!</SplitText>
             <SplitText>Keep Exploring.</SplitText>
-            <SplitText className="text-3xl font-bold">
+            <SplitText className="text-lg md:text-3xl font-bold">
               Boost your chances! A more detailed profile helps the right
               connections find you. ✨
             </SplitText>
@@ -60,9 +59,10 @@ const Matches = () => {
 
   return (
     <>
-      <Header />
-      <div className="bg-[#291424] text-[#f0f0f0] min-h-screen">
-        <div className="text-3xl font-bold text-center py-5">Your Matches</div>
+      <div className="bg-[#291424] text-[#f0f0f0] min-h-screen px-6 md:px-0">
+        <div className="text-2xl md:text-3xl font-bold text-center py-5">
+          Your Matches
+        </div>
         <div className="w-full flex flex-col items-center">
           {/*cards*/}
           {userMatches.map((match) => (

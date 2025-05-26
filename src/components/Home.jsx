@@ -3,6 +3,7 @@ import homeBG from "../assets/homeBG.jpg";
 import HeaderHome from "./HeaderHome";
 import { Link } from "react-router-dom";
 import SplitText from "./SplitText";
+import FooterHome from "./FooterHome";
 
 const Home = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -61,10 +62,10 @@ const Home = () => {
   return (
     <>
       <HeaderHome />
-      <div className="relative h-[100vh] text-gray-300 w-full bg-[#f0f0f0]">
+      <div className="relative h-[100vh] text-gray-300 w-full">
         <div className="w-full h-full overflow-hidden">
           <img
-            className={`w-full -translate-y-24 brightness-50 transition-all duration-1000 ease-in-out ${
+            className={`w-full h-full object-cover brightness-50 transition-all duration-1000 ease-in-out ${
               isVisible ? "opacity-100 scale-[100%]" : "opacity-0 scale-[130%]"
             }`}
             // src="https://i.pinimg.com/originals/9f/72/f8/9f72f8a50440bddc3bcc2ad12fbcf4c0.gif"
@@ -72,23 +73,23 @@ const Home = () => {
           />
         </div>
 
-        <div className="absolute top-0 w-full h-[100vh] z-10 flex flex-col items-center justify-center  pt-10">
-          <div className="text-8xl text-white font-extrabold font-sans">
+        <div className="absolute top-0 w-full h-[100vh] z-10 flex flex-col items-center justify-center pt-0 md:pt-10">
+          <div className="text-5xl md:text-8xl text-white font-extrabold text-center">
             <SplitText className="text-white">DevTinder</SplitText>
           </div>
-          <div className="text-2xl font-bold my-3">
+          <div className="text-xl md:text-2xl font-bold my-3 text-center">
             <SplitText>
               Find Developers. Make Connections. Build More Than Just Code
             </SplitText>
           </div>
-          <div className="text-base font-light">
+          <div className="text-sm md:text-base font-light text-center">
             <SplitText>
               Code, collaborate, connect—your developer circle starts here
             </SplitText>
           </div>
           <Link to="/login">
             <div
-              className={`bg-[#404040] text-white text-xl font-medium mt-8 w-fit rounded-full cursor-pointer hover:shadow-lg bg-gradient-to-r from-[#753762] to-[#4b1745] animate-gradient transition-all duration-700 ease-in-out delay-500 ${
+              className={`text-white text-xl font-medium mt-8 w-fit rounded-full cursor-pointer hover:shadow-lg bg-gradient-to-r from-[#753762] to-[#4b1745] animate-gradient transition-all duration-700 ease-in-out delay-500 ${
                 isVisible
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-y-20"
@@ -101,17 +102,17 @@ const Home = () => {
           </Link>
         </div>
       </div>
-      <div className="w-full flex flex-col gap-20 bg-[#291424] py-20 px-10 text-white">
+      <div className="w-full flex flex-col gap-7 md:gap-20 bg-[#291424] py-10 md:py-20 px-3 md:px-10 text-white">
         <div className="flex justify-start">
           <div
             id="animateDiv1"
-            className={`w-1/2 p-2 transition-all duration-700 ease-in-out ${
+            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
               visible1
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="text-4xl font-bold mb-4">
+            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
               Connect with Like-Minded Developers 🧑‍💻
             </div>
             <div className="text-base font-light">
@@ -126,13 +127,13 @@ const Home = () => {
         <div className="flex justify-end">
           <div
             id="animateDiv2"
-            className={`w-1/2 p-2 transition-all duration-700 ease-in-out ${
+            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
               visible2
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="text-4xl font-bold mb-4">
+            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
               Swipe. Match. Build. 💬
             </div>
             <div className="text-base font-light">
@@ -147,13 +148,13 @@ const Home = () => {
         <div className="flex justify-start">
           <div
             id="animateDiv3"
-            className={`w-1/2 p-2 transition-all duration-700 ease-in-out ${
+            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
               visible3
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="text-4xl font-bold mb-4">
+            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
               From Ideas to Execution ✨
             </div>
             <div className="text-base font-light">
@@ -168,13 +169,13 @@ const Home = () => {
         <div className="flex justify-end">
           <div
             id="animateDiv4"
-            className={`w-1/2 p-2 transition-all duration-700 ease-in-out ${
+            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
               visible4
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="text-4xl font-bold mb-4">
+            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
               For Developers, By Developers 🪄
             </div>
             <div className="text-base font-light">
@@ -185,6 +186,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <FooterHome />
     </>
   );
 };

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Header from "./Header";
 import ProfileCard from "./profileCard";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -9,8 +8,9 @@ import Snackbar from "@mui/material/Snackbar";
 import { storage } from "../utils/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import EditIcon from "@mui/icons-material/Edit";
-import { IconButton } from "@mui/material";
-import Tooltip from "@mui/material/Tooltip";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { removeUser } from "../utils/userSlice";
+import SignoutDialog from "./SignoutDialog";
 
 const Profile = () => {
   const userData = useSelector((store) => store.user);
@@ -23,6 +23,7 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState("");
   const [hobbies, setHobbies] = useState("");
+  const [userLocation, setUserLocation] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnack, setOpenSnack] = useState(false);
@@ -44,6 +45,7 @@ const Profile = () => {
       setBio(userData.bio || "");
       setSkills(userData.skills || "");
       setHobbies(userData.hobbies || "");
+      setUserLocation(userData.userLocation || "");
       setImagePreview(userData?.photoURL);
     }
   }, [userData]);
@@ -94,6 +96,7 @@ const Profile = () => {
           bio,
           skills,
           hobbies,
+          userLocation: userLocation,
           photoURL: imageURL,
         },
         { withCredentials: true }
@@ -117,6 +120,11 @@ const Profile = () => {
     setOpenSnack(false);
   };
 
+  const [openDialog, setOpenDialog] = useState(false);
+  const handleDialog = () => {
+    setOpenDialog(!openDialog);
+  };
+
   const handleImageChange = (e) => {
     console.log("image change");
 
@@ -127,10 +135,21 @@ const Profile = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await axios.post(BASE_URL + "/logout", {}, { withCredentials: true });
+      dispatch(removeUser());
+      // navigate("/login");
+      window.location.href = "/login";
+    } catch (err) {
+      // navigate("/error");
+      window.location.href = "/error";
+    }
+  };
+
   return (
     <>
-      <Header />
-      <div className="w-full flex bg-[#291424] text-[rgb(240,240,240)] pb-20 px-20 pt-10">
+      <div className="w-full flex flex-col-reverse md:flex-row bg-[#291424] text-[rgb(240,240,240)] pb-10 md:pb-20 px-6 md:px-20 pt-0 md:pt-10">
         <div
           className={`w-full md:w-1/2 mr-10 mt-10 md:mt-0 transition-all duration-700 ease-in-out ${
             !isVisible
@@ -139,7 +158,7 @@ const Profile = () => {
           }`}
         >
           <div className="w-full flex flex-col items-center bg-[#291424] rounded-2xl pt-1">
-            <div className="text-xl font-semibold mb-3">
+            <div className="text-lg md:text-xl font-semibold mb-3">
               How Others see your Profile
             </div>
             {userData ? (
@@ -257,6 +276,20 @@ const Profile = () => {
                 </span>
               </div>
 
+              {/* location */}
+              <div className="w-full relative">
+                <input
+                  value={userLocation}
+                  onChange={(e) => setUserLocation(e.target.value)}
+                  name="user_location"
+                  placeholder="your current location"
+                  className="bg-transparent border-2 border-[#555555] shadow-md rounded-full w-full p-4 mb-4"
+                />
+                <span className="absolute -top-2 left-3 bg-[#291424] text-xs text-[#7b7b7b] px-1">
+                  Location *
+                </span>
+              </div>
+
               {/* Skills */}
               <div className="w-full relative">
                 <textarea
@@ -320,6 +353,25 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      <div className="w-full bg-[#291424] flex justify-center items-center pb-5">
+        <button
+          onClick={handleDialog}
+          className="bg-[#404040] text-white text-xl font-medium w-1/2 md:w-1/3 rounded-full cursor-pointer hover:shadow-lg"
+        >
+          <div className="px-10 py-4 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
+            Signout
+            <LogoutIcon className="text-[#b5b3b3] hover:text-[#747474] ml-2" />
+          </div>
+        </button>
+      </div>
+
+      <SignoutDialog
+        open={openDialog}
+        handleDialog={handleDialog}
+        handleSignOut={handleSignOut}
+      />
+
       <Snackbar
         open={openSnack}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
