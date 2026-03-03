@@ -13,6 +13,7 @@ import Requests from "./Requests";
 import Recommend from "./Recommend";
 
 import Layout from "./Layout";
+import SessionExpired from "./SessionExpired";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -23,6 +24,10 @@ const Body = () => {
     {
       path: "login",
       element: <Login />,
+    },
+    {
+      path: "sessionExpired",
+      element: <SessionExpired />,
     },
     {
       path: "/",
@@ -48,6 +53,7 @@ const Body = () => {
           path: "recommend",
           element: <Recommend />,
         },
+
         {
           path: "*",
           element: <Error />,

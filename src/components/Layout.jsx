@@ -2,35 +2,56 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 import { addUser } from "../utils/userSlice";
 import { useEffect } from "react";
+import { addRequests } from "../utils/requestsSlice";
 
 const Layout = () => {
-  const dispatch = useDispatch();
-  const userData = useSelector((store) => store?.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const requestsData = useSelector((store) => store.requests);
 
-  const fetchUser = async () => {
-    if (userData) return;
+  // gets connection requests and store them to the store
+  const getRequests = async () => {
+    if (requestsData.length > 0) return;
     try {
-      const res = await axios.get(BASE_URL + "/profile/view", {
+      const res = await api.get(BASE_URL + "/user/requests/recieved", {
         withCredentials: true,
       });
-      dispatch(addUser(res?.data));
+      console.log(res?.data?.data);
+      dispatch(addRequests(res?.data?.data));
     } catch (err) {
-      if (err.status === 401 || err.status === 400) {
-        navigate("/login");
-        // window.location.href = "/login";
-      }
       console.log(err);
     }
   };
 
   useEffect(() => {
-    fetchUser();
+    getRequests();
   }, []);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await api.get(BASE_URL + "/profile/view");
+        console.log(res, "profile res");
+        dispatch(addUser(res?.data));
+      } catch (err) {
+        console.log(err, "profile errrr");
+        if (err.response?.status === 401) {
+          console.warn("Session expired. Redirecting to login...");
+          // navigate("/sessionExpired");
+        }
+      }
+    };
+
+    checkSession();
+    // Run every 5 minutes
+    const intervalId = setInterval(checkSession, 60000);
+
+    return () => clearInterval(intervalId); // Cleanup when Layout unmounts
+  }, [navigate]);
 
   return (
     <>

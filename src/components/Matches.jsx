@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 import Header from "./Header";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ const Matches = () => {
 
   const getMatches = async () => {
     try {
-      const res = await axios.get(BASE_URL + "/user/connections", {
+      const res = await api.get(BASE_URL + "/user/connections", {
         withCredentials: true,
       });
       dispatch(addMatches(res?.data?.data));

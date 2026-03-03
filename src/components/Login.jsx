@@ -116,11 +116,13 @@ const Login = () => {
             withCredentials: true, // to set the cookies in browser
           }
         );
+        console.log(res, "llllllll");
+
         setErrorMessage("");
         dispatch(addUser(res?.data));
         navigate("/feed");
       } catch (err) {
-        console.log(err);
+        console.log(err, "errrrrrr");
         if (err.response && err.response.data && err.response.data.message) {
           setErrorMessage(err.response.data.message);
         } else {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../utils/axios";
 import Header from "./Header";
 import { BASE_URL } from "../utils/constants";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ const Requests = () => {
 
   const getRequests = async () => {
     try {
-      const res = await axios.get(BASE_URL + "/user/requests/recieved", {
+      const res = await api.get(BASE_URL + "/user/requests/recieved", {
         withCredentials: true,
       });
       console.log(res?.data?.data);

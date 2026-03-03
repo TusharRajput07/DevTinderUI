@@ -1,6 +1,5 @@
-import axios from "axios";
+import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
-import Header from "./Header";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { addFeed } from "../utils/feedSlice";
@@ -17,12 +16,11 @@ const Feed = () => {
   }, []);
   const dispatch = useDispatch();
   const feedData = useSelector((store) => store.feed);
-  const requestsData = useSelector((store) => store.requests);
   console.log(feedData);
 
   // gets feedData and stores them to the store
   const getFeed = async () => {
-    if (feedData) return;
+    // if (feedData) return;
     try {
       const res = await axios.get(BASE_URL + "/feed", {
         withCredentials: true,
@@ -34,23 +32,8 @@ const Feed = () => {
     }
   };
 
-  // gets connection requests and store them to the store
-  const getRequests = async () => {
-    if (requestsData.length > 0) return;
-    try {
-      const res = await axios.get(BASE_URL + "/user/requests/recieved", {
-        withCredentials: true,
-      });
-      console.log(res?.data?.data);
-      dispatch(addRequests(res?.data?.data));
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   useEffect(() => {
     getFeed();
-    getRequests();
   }, []);
 
   if (!feedData) return;

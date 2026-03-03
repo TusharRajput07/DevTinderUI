@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ProfileCard from "./profileCard";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 import { addUser } from "../utils/userSlice";
 import Snackbar from "@mui/material/Snackbar";
@@ -86,7 +86,7 @@ const Profile = () => {
     }
 
     try {
-      const res = await axios.patch(
+      const res = await api.patch(
         BASE_URL + "/profile/update",
         {
           firstName,
@@ -137,7 +137,7 @@ const Profile = () => {
 
   const handleSignOut = async () => {
     try {
-      await axios.post(BASE_URL + "/logout", {}, { withCredentials: true });
+      await api.post(BASE_URL + "/logout", {}, { withCredentials: true });
       dispatch(removeUser());
       // navigate("/login");
       window.location.href = "/login";
