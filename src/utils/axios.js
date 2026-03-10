@@ -16,11 +16,11 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
 
       // Redirect to login
-      // window.location.href = "/sessionExpired";
+      window.location.href = "/sessionExpired";
       console.log("session expired!");
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

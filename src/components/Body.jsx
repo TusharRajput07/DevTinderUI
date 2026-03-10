@@ -11,9 +11,11 @@ import Home from "./Home";
 import Matches from "./Matches";
 import Requests from "./Requests";
 import Recommend from "./Recommend";
+import Chat from "./Chat";
 
 import Layout from "./Layout";
 import SessionExpired from "./SessionExpired";
+import RequestProfile from "./RequestProfile";
 
 const Body = () => {
   const appRouter = createBrowserRouter([
@@ -48,6 +50,18 @@ const Body = () => {
         {
           path: "requests",
           element: <Requests />,
+        },
+        {
+          path: "requests/:requestId",
+          element: <RequestProfile />,
+        },
+        {
+          path: "chat",
+          element: <Chat />,
+        },
+        {
+          path: "chat/:userId",
+          element: <Chat />,
         },
         {
           path: "recommend",

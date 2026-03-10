@@ -1,20 +1,22 @@
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ClearIcon from "@mui/icons-material/Clear";
 import defaultProfile from "../assets/defaultProfile.webp";
-import axios from "axios";
+import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { removeUserFromFeed } from "../utils/feedSlice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useLocation } from "react-router-dom";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { addFeed } from "../utils/feedSlice";
 
-const ProfileCard = ({ userData }) => {
+const ProfileCard = ({ userData, onFetchMore }) => {
   const dispatch = useDispatch();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const location = useLocation();
+  const feedData = useSelector((store) => store.feed);
 
   const {
     firstName,
@@ -44,20 +46,41 @@ const ProfileCard = ({ userData }) => {
     img.src = photoURL || defaultProfile;
 
     return () => {
-      img.onload = null; // cleanup
+      img.onload = null;
     };
   }, [userData._id]);
+
+  const fetchMoreIfNeeded = useCallback(
+    async (remainingCount) => {
+      if (!feedData.hasMore) return; // no more users on server
+      if (remainingCount > 2) return; // still enough cards, no need to fetch yet
+
+      try {
+        const res = await api.get(
+          BASE_URL + `/feed?page=${feedData.page}&limit=10`,
+          { withCredentials: true },
+        );
+        dispatch(addFeed(res?.data));
+      } catch (err) {
+        console.log("Failed to fetch more users", err);
+      }
+    },
+    [feedData.hasMore, feedData.page, dispatch],
+  );
 
   const sendRequest = async (status, _id) => {
     if (location.pathname === "/profile") return;
     try {
-      const res = await axios.post(
+      await api.post(
         BASE_URL + "/request/send/" + status + "/" + _id,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
-      console.log(res);
       dispatch(removeUserFromFeed(_id));
+
+      // after removing, check if we need to fetch more
+      const remaining = feedData.users.length - 1;
+      fetchMoreIfNeeded(remaining);
     } catch (err) {
       console.log(err);
     }

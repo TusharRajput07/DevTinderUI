@@ -1,15 +1,17 @@
-import axios from "axios";
+import api from "../utils/axios";
 import defaultProfile from "../assets/defaultProfile.webp";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { removeRequest } from "../utils/requestsSlice";
 import { useEffect, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useNavigate } from "react-router-dom";
 
 const RequestCard = ({ userData }) => {
   const { firstName, lastName, age, gender, bio, photoURL } =
     userData?.fromUserId;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -19,13 +21,13 @@ const RequestCard = ({ userData }) => {
     });
   }, []);
 
-  const reviewRequest = async (status, _id) => {
-    console.log("called");
+  const reviewRequest = async (e, status, _id) => {
+    e.stopPropagation(); // prevent card click from firing
     try {
-      const res = await axios.post(
+      const res = await api.post(
         BASE_URL + "/request/review/" + status + "/" + _id,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log(res?.data);
       dispatch(removeRequest(_id));
@@ -40,7 +42,10 @@ const RequestCard = ({ userData }) => {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
       }`}
     >
-      <div className="w-full bg-[#4f404b] text-[#f0f0f0] border border-[#555555] hover:bg-[#5b4a56] rounded-2xl mb-5 p-2 transition-all duration-150 ease-in-out ">
+      <div
+        onClick={() => navigate(`/requests/${userData?._id}`)}
+        className="w-full bg-[#4f404b] text-[#f0f0f0] border border-[#555555] hover:bg-[#5b4a56] rounded-2xl mb-5 p-2 transition-all duration-150 ease-in-out cursor-pointer"
+      >
         <div className="flex items-center">
           <div className="h-28 w-28 overflow-hidden flex items-center justify-center">
             {!imageLoaded && (
@@ -72,14 +77,14 @@ const RequestCard = ({ userData }) => {
         <div className="flex justify-center pb-1 pt-2">
           <div className="text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg bg-[#4b1745] mx-2">
             <div
-              onClick={() => reviewRequest("accepted", userData?._id)}
+              onClick={(e) => reviewRequest(e, "accepted", userData?._id)}
               className="px-10 py-2 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out"
             >
               Confirm
             </div>
           </div>
           <div
-            onClick={() => reviewRequest("rejected", userData?._id)}
+            onClick={(e) => reviewRequest(e, "rejected", userData?._id)}
             className="bg-[#222222] text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg mx-2"
           >
             <div className="px-10 py-2 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">

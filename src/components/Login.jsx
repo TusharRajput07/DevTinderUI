@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import SplitText from "./SplitText";
 import FooterHome from "./FooterHome";
+import api from "../utils/axios";
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -70,7 +71,7 @@ const Login = () => {
         lastName,
         email,
         password,
-        isSignUp
+        isSignUp,
       );
       setErrorMessage(response);
       if (response !== null) {
@@ -79,7 +80,7 @@ const Login = () => {
       }
 
       try {
-        const res = await axios.post(
+        const res = await api.post(
           BASE_URL + "/signup",
           {
             firstName: firstNameRef?.current?.value,
@@ -89,7 +90,7 @@ const Login = () => {
           },
           {
             withCredentials: true, // to set the cookies in browser
-          }
+          },
         );
         setErrorMessage("");
 
@@ -106,7 +107,7 @@ const Login = () => {
     } else {
       // login
       try {
-        const res = await axios.post(
+        const res = await api.post(
           BASE_URL + "/login",
           {
             email: emailRef?.current?.value,
@@ -114,9 +115,8 @@ const Login = () => {
           },
           {
             withCredentials: true, // to set the cookies in browser
-          }
+          },
         );
-        console.log(res, "llllllll");
 
         setErrorMessage("");
         dispatch(addUser(res?.data));

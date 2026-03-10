@@ -11,6 +11,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { removeUser } from "../utils/userSlice";
 import SignoutDialog from "./SignoutDialog";
+import { resetFeed } from "../utils/feedSlice";
+import { resetMatches } from "../utils/matchesSlice";
+import { disconnectSocket } from "../utils/socket";
 
 const Profile = () => {
   const userData = useSelector((store) => store.user);
@@ -99,7 +102,7 @@ const Profile = () => {
           userLocation: userLocation,
           photoURL: imageURL,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       dispatch(addUser(res?.data?.data));
@@ -139,10 +142,11 @@ const Profile = () => {
     try {
       await api.post(BASE_URL + "/logout", {}, { withCredentials: true });
       dispatch(removeUser());
-      // navigate("/login");
+      dispatch(resetFeed());
+      dispatch(resetMatches());
+      disconnectSocket();
       window.location.href = "/login";
     } catch (err) {
-      // navigate("/error");
       window.location.href = "/error";
     }
   };

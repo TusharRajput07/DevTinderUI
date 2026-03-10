@@ -14,8 +14,15 @@ const Header = () => {
   const user = useSelector((store) => store?.user);
   const [isVisible, setIsVisible] = useState(false);
   const requestsData = useSelector((store) => store.requests);
+  const unreadData = useSelector((store) => store.unread) || {};
   const [imageLoaded, setImageLoaded] = useState(false);
   const location = useLocation();
+
+  // total unread count across all chats
+  const totalUnread = Object.values(unreadData).reduce(
+    (sum, val) => sum + (val.count || 0),
+    0,
+  );
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -50,6 +57,7 @@ const Header = () => {
             </h1>
           </Link>
         </div>
+
         {/* Navigation */}
         <nav>
           {user && (
@@ -90,13 +98,22 @@ const Header = () => {
                 </li>
               </Link>
 
-              <li>
-                <Tooltip title="Chats" arrow>
-                  <IconButton>
-                    <ChatBubbleOutlineIcon className="text-[#b5b3b3] hover:text-[#747474]" />
-                  </IconButton>
-                </Tooltip>
-              </li>
+              <Link to="/chat">
+                <li>
+                  <Tooltip title="Chats" arrow>
+                    <IconButton>
+                      {/* show badge if there are unread messages */}
+                      {totalUnread > 0 ? (
+                        <Badge badgeContent={totalUnread} color="secondary">
+                          <ChatBubbleOutlineIcon className="text-[#b5b3b3] hover:text-[#747474]" />
+                        </Badge>
+                      ) : (
+                        <ChatBubbleOutlineIcon className="text-[#b5b3b3] hover:text-[#747474]" />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                </li>
+              </Link>
 
               <Link to="/profile">
                 <li>

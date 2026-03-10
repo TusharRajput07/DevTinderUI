@@ -7,12 +7,15 @@ const matchesSlice = createSlice({
     addMatches: (state, action) => {
       return action.payload;
     },
-    removeMatches: (state, action) => {
-      return null;
+    // removes a single match by user ID
+    removeMatch: (state, action) => {
+      return state.filter((match) => match._id !== action.payload);
+    },
+    resetMatches: () => {
+      return [];
     },
   },
 });
 
-export const { addMatches, removeMatches } = matchesSlice.actions;
-
+export const { addMatches, removeMatch, resetMatches } = matchesSlice.actions;
 export default matchesSlice.reducer;
