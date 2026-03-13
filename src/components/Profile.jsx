@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import ProfileCard from "./profileCard";
+import ProfileCard from "./ProfileCard";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
