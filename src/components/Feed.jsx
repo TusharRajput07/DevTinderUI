@@ -3,7 +3,7 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { addFeed } from "../utils/feedSlice";
-import ProfileCard from "./profileCard";
+import ProfileCard from "./ProfileCard";
 import SplitText from "./SplitText";
 
 const LIMIT = 10; // how many users to fetch per batch
