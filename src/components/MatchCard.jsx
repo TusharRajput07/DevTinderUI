@@ -8,7 +8,7 @@ import { removeMatch } from "../utils/matchesSlice";
 import { useNavigate } from "react-router-dom";
 
 const MatchCard = ({ userData }) => {
-  const { firstName, lastName, age, gender, bio, photoURL, _id } = userData;
+  const { firstName, lastName, age, gender, bio, photos, _id } = userData;
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [unmatching, setUnmatching] = useState(false);
@@ -59,7 +59,7 @@ const MatchCard = ({ userData }) => {
               className={`object-cover w-full h-full rounded-xl ${
                 imageLoaded ? "block" : "hidden"
               }`}
-              src={photoURL || defaultProfile}
+              src={photos?.[0] || defaultProfile}
               alt="User profile"
               onLoad={() => setImageLoaded(true)}
             />

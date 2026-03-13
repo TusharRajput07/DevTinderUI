@@ -22,7 +22,7 @@ const Layout = () => {
   const matchesData = useSelector((store) => store.matches);
   const loggedInUser = useSelector((store) => store.user);
   const loggedInUserRef = useRef(loggedInUser);
-  const matchesRef = useRef(matchesData); // ref so socket always has latest matches
+  const matchesRef = useRef(matchesData);
 
   useEffect(() => {
     loggedInUserRef.current = loggedInUser;
@@ -40,7 +40,7 @@ const Layout = () => {
       });
       dispatch(addRequests(res?.data?.data));
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -52,7 +52,7 @@ const Layout = () => {
       });
       dispatch(addMatches(res?.data?.data));
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -63,7 +63,7 @@ const Layout = () => {
       });
       dispatch(setAllUnread(res?.data?.data));
     } catch (err) {
-      console.log("Failed to fetch unread counts", err);
+      console.error(err);
     }
   };
 
@@ -79,7 +79,7 @@ const Layout = () => {
         const res = await api.get(BASE_URL + "/profile/view");
         dispatch(addUser(res?.data));
       } catch (err) {
-        console.log(err, "profile errrr");
+        console.error(err);
       }
     };
 
@@ -88,7 +88,6 @@ const Layout = () => {
     return () => clearInterval(intervalId);
   }, [navigate]);
 
-  // main socket setup — runs once on mount
   useEffect(() => {
     const socket = connectSocket();
 
@@ -97,33 +96,25 @@ const Layout = () => {
       if (matches?.length > 0) {
         matches.forEach((match) => {
           socket.emit("joinChat", { targetUserId: match._id });
-          console.log("joined room with:", match._id);
         });
       }
     };
 
-    // join all rooms on connect
     socket.on("connect", () => {
-      console.log("socket connected:", socket.id);
       joinAllRooms();
     });
 
-    // if already connected, join immediately
     if (socket.connected) {
       joinAllRooms();
     }
 
     socket.on("connect_error", (err) => {
-      console.log("socket connection error:", err.message);
+      console.error("socket connection error:", err.message);
     });
 
-    socket.on("disconnect", (reason) => {
-      console.log("socket disconnected:", reason);
-    });
+    socket.on("disconnect", () => {});
 
     const handleMessage = (message) => {
-      console.log("message received in Layout:", message);
-
       const myId = loggedInUserRef.current?._id?.toString();
       if (!myId) return;
 
@@ -173,14 +164,12 @@ const Layout = () => {
     };
   }, []);
 
-  // whenever matches load, join any new rooms
   useEffect(() => {
     const socket = connectSocket();
     if (!socket.connected || !matchesData?.length) return;
 
     matchesData.forEach((match) => {
       socket.emit("joinChat", { targetUserId: match._id });
-      console.log("joined room after matches loaded:", match._id);
     });
   }, [matchesData]);
 

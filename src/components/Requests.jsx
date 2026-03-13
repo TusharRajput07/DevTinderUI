@@ -23,7 +23,6 @@ const Requests = () => {
       const res = await api.get(BASE_URL + "/user/requests/recieved", {
         withCredentials: true,
       });
-      console.log(res?.data?.data);
       dispatch(addRequests(res?.data?.data));
     } catch (err) {
       console.log(err);

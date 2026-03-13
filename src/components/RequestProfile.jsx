@@ -4,10 +4,12 @@ import { removeRequest } from "../utils/requestsSlice";
 import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 import defaultProfile from "../assets/defaultProfile.webp";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 const RequestProfile = () => {
   const { requestId } = useParams();
@@ -16,8 +18,10 @@ const RequestProfile = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useRef(null);
 
-  // get the request from redux store
   const request = useSelector((store) =>
     store.requests.find((r) => r._id === requestId),
   );
@@ -27,7 +31,6 @@ const RequestProfile = () => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
 
-  // if request not found in store, go back
   useEffect(() => {
     if (!request) navigate("/requests");
   }, [request]);
@@ -40,11 +43,42 @@ const RequestProfile = () => {
     age,
     gender,
     bio,
-    photoURL,
+    photos,
     skills,
     hobbies,
     userLocation,
   } = request.fromUserId;
+
+  const photoList = photos?.filter(Boolean).length
+    ? photos.filter(Boolean)
+    : [defaultProfile];
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev - 1 + photoList.length) % photoList.length);
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev + 1) % photoList.length);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setPhotoIndex((prev) => (prev + 1) % photoList.length);
+      else
+        setPhotoIndex(
+          (prev) => (prev - 1 + photoList.length) % photoList.length,
+        );
+    }
+    touchStartX.current = null;
+  };
 
   const reviewRequest = async (status) => {
     setLoading(true);
@@ -81,21 +115,76 @@ const RequestProfile = () => {
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
         }`}
       >
-        {/* Image */}
-        <div className="h-70 w-full overflow-hidden relative">
+        {/* Photo carousel */}
+        <div
+          className="relative h-70 w-full overflow-hidden rounded-xl"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {!imageLoaded && (
-            <div className="w-full h-full rounded-xl bg-[#726f71] flex items-center justify-center">
+            <div className="w-full h-full rounded-xl bg-[#726f71] flex items-center justify-center absolute inset-0 z-10">
               <CircularProgress style={{ color: "white" }} />
             </div>
           )}
-          <img
-            className={`object-cover w-full h-full rounded-xl ${
-              imageLoaded ? "block" : "hidden"
-            }`}
-            src={photoURL || defaultProfile}
-            alt="User profile"
-            onLoad={() => setImageLoaded(true)}
-          />
+
+          {/* sliding strip */}
+          <div
+            className="flex h-full"
+            style={{
+              width: `${photoList.length * 100}%`,
+              transform: `translateX(-${(photoIndex * 100) / photoList.length}%)`,
+              transition: "transform 0.4s ease-in-out",
+            }}
+          >
+            {photoList.map((photo, i) => (
+              <div
+                key={i}
+                className="h-full flex-shrink-0"
+                style={{ width: `${100 / photoList.length}%` }}
+              >
+                <img
+                  src={photo}
+                  alt={`Photo ${i + 1}`}
+                  className="object-cover w-full h-full rounded-xl"
+                  onLoad={() => {
+                    if (i === 0) setImageLoaded(true);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* dot indicators */}
+          {photoList.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {photoList.map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${i === photoIndex ? "bg-white scale-125" : "bg-white/40"}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* chevrons — desktop only */}
+          {photoList.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className={`hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 z-10 ${isHovered ? "opacity-100" : "opacity-0"}`}
+              >
+                <ChevronLeftIcon fontSize="small" />
+              </button>
+              <button
+                onClick={handleNext}
+                className={`hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 z-10 ${isHovered ? "opacity-100" : "opacity-0"}`}
+              >
+                <ChevronRightIcon fontSize="small" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Details */}
@@ -138,9 +227,7 @@ const RequestProfile = () => {
         <div className="flex justify-center pb-1 pt-2 gap-4">
           <div
             onClick={() => !loading && reviewRequest("accepted")}
-            className={`text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg bg-[#4b1745] mx-2 ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg bg-[#4b1745] mx-2 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="px-10 py-2 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
               Confirm
@@ -148,9 +235,7 @@ const RequestProfile = () => {
           </div>
           <div
             onClick={() => !loading && reviewRequest("rejected")}
-            className={`bg-[#222222] text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg mx-2 ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`bg-[#222222] text-white text-base font-medium w-fit rounded-2xl cursor-pointer hover:shadow-lg mx-2 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="px-10 py-2 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
               Delete

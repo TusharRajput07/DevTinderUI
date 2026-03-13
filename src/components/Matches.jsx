@@ -17,7 +17,6 @@ const Matches = () => {
 
   const dispatch = useDispatch();
   const userMatches = useSelector((store) => store.matches);
-  console.log(userMatches);
 
   const getMatches = async () => {
     try {

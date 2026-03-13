@@ -16,6 +16,7 @@ const Feed = () => {
   const feedData = useSelector((store) => store.feed);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
 

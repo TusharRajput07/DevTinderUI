@@ -8,7 +8,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
 
 const RequestCard = ({ userData }) => {
-  const { firstName, lastName, age, gender, bio, photoURL } =
+  const { firstName, lastName, age, gender, bio, photos } =
     userData?.fromUserId;
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,14 +22,13 @@ const RequestCard = ({ userData }) => {
   }, []);
 
   const reviewRequest = async (e, status, _id) => {
-    e.stopPropagation(); // prevent card click from firing
+    e.stopPropagation();
     try {
       const res = await api.post(
         BASE_URL + "/request/review/" + status + "/" + _id,
         {},
         { withCredentials: true },
       );
-      console.log(res?.data);
       dispatch(removeRequest(_id));
     } catch (err) {
       console.log(err);
@@ -57,7 +56,7 @@ const RequestCard = ({ userData }) => {
               className={`object-cover w-full h-full rounded-xl ${
                 imageLoaded ? "block" : "hidden"
               }`}
-              src={photoURL || defaultProfile}
+              src={photos?.[0] || defaultProfile}
               alt="User profile"
               onLoad={() => setImageLoaded(true)}
             />

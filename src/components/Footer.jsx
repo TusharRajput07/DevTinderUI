@@ -1,9 +1,16 @@
-const Footer = () => {
+import { Link } from "react-router-dom";
+
+const FooterHome = () => {
   return (
     <footer className="w-full bg-[#1e0619] bg-gradient-to-t from-black text-[#d0d0d0] py-12 flex flex-col justify-between items-center">
       {/* Centered Logo */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-white">DevTinder</h2>
+        <h2
+          onClick={() => window.location.reload()}
+          className="text-2xl font-bold text-white cursor-pointer"
+        >
+          DevTinder
+        </h2>
         <p className="text-sm">Find your coding match.</p>
       </div>
 
@@ -13,24 +20,24 @@ const Footer = () => {
         <nav className="mb-4 md:mb-0">
           <ul className="flex space-x-6">
             <li>
-              <a href="#" className="hover:text-white transition">
+              <Link to="/about" className="hover:text-white transition">
                 About
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
+              <Link to="/privacy" className="hover:text-white transition">
                 Privacy Policy
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
+              <Link to="/terms" className="hover:text-white transition">
                 Terms
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#" className="hover:text-white transition">
+              <Link to="/contact" className="hover:text-white transition">
                 Contact
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>
@@ -42,4 +49,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default FooterHome;

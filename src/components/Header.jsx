@@ -102,7 +102,6 @@ const Header = () => {
                 <li>
                   <Tooltip title="Chats" arrow>
                     <IconButton>
-                      {/* show badge if there are unread messages */}
                       {totalUnread > 0 ? (
                         <Badge badgeContent={totalUnread} color="secondary">
                           <ChatBubbleOutlineIcon className="text-[#b5b3b3] hover:text-[#747474]" />
@@ -126,7 +125,7 @@ const Header = () => {
                         className={`object-cover w-full h-full rounded-full ${
                           imageLoaded ? "block" : "hidden"
                         }`}
-                        src={user?.photoURL || defaultProfile}
+                        src={user?.photos?.[0] || defaultProfile}
                         alt="User profile"
                         onLoad={() => setImageLoaded(true)}
                       />

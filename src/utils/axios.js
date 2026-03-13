@@ -17,7 +17,6 @@ api.interceptors.response.use(
 
       // Redirect to login
       window.location.href = "/sessionExpired";
-      console.log("session expired!");
     }
     return Promise.reject(error);
   },

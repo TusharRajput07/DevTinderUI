@@ -1,11 +1,13 @@
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ClearIcon from "@mui/icons-material/Clear";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import defaultProfile from "../assets/defaultProfile.webp";
 import api from "../utils/axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { removeUserFromFeed } from "../utils/feedSlice";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useLocation } from "react-router-dom";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -15,6 +17,30 @@ const ProfileCard = ({ userData, onFetchMore }) => {
   const dispatch = useDispatch();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        // swiped left — next photo
+        setPhotoIndex((prev) => (prev + 1) % photoList.length);
+      } else {
+        // swiped right — prev photo
+        setPhotoIndex(
+          (prev) => (prev - 1 + photoList.length) % photoList.length,
+        );
+      }
+    }
+    touchStartX.current = null;
+  };
   const location = useLocation();
   const feedData = useSelector((store) => store.feed);
 
@@ -24,37 +50,59 @@ const ProfileCard = ({ userData, onFetchMore }) => {
     bio,
     gender,
     age,
-    photoURL,
+    photos,
     skills,
     hobbies,
     userLocation,
     _id,
   } = userData;
 
-  // Load image manually before showing the card
+  // photos array — fallback to default if empty
+  const photoList = photos?.filter(Boolean).length
+    ? photos.filter(Boolean)
+    : [defaultProfile];
+  const currentPhoto = photoList[photoIndex] || defaultProfile;
+
+  // reset index when switching users
+  useEffect(() => {
+    setPhotoIndex(0);
+  }, [_id]);
+
+  // preload first image — re-runs when the actual photo URL changes, not just _id
   useEffect(() => {
     setImageLoaded(false);
     setIsVisible(false);
 
+    const src = photoList[0];
+
+    // if it's the default (no real photo), just show immediately
+    if (src === defaultProfile) {
+      setImageLoaded(true);
+      requestAnimationFrame(() => setIsVisible(true));
+      return;
+    }
+
     const img = new Image();
     img.onload = () => {
       setImageLoaded(true);
-      requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
+      requestAnimationFrame(() => setIsVisible(true));
     };
-    img.src = photoURL || defaultProfile;
-
+    img.onerror = () => {
+      // if image fails to load, show card anyway with default
+      setImageLoaded(true);
+      requestAnimationFrame(() => setIsVisible(true));
+    };
+    img.src = src;
     return () => {
       img.onload = null;
+      img.onerror = null;
     };
-  }, [userData._id]);
+  }, [photoList[0]]);
 
   const fetchMoreIfNeeded = useCallback(
     async (remainingCount) => {
-      if (!feedData.hasMore) return; // no more users on server
-      if (remainingCount > 2) return; // still enough cards, no need to fetch yet
-
+      if (!feedData.hasMore) return;
+      if (remainingCount > 2) return;
       try {
         const res = await api.get(
           BASE_URL + `/feed?page=${feedData.page}&limit=10`,
@@ -77,13 +125,20 @@ const ProfileCard = ({ userData, onFetchMore }) => {
         { withCredentials: true },
       );
       dispatch(removeUserFromFeed(_id));
-
-      // after removing, check if we need to fetch more
-      const remaining = feedData.users.length - 1;
-      fetchMoreIfNeeded(remaining);
+      fetchMoreIfNeeded(feedData.users.length - 1);
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev - 1 + photoList.length) % photoList.length);
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev + 1) % photoList.length);
   };
 
   if (!imageLoaded) {
@@ -100,13 +155,73 @@ const ProfileCard = ({ userData, onFetchMore }) => {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-40"
       }`}
     >
-      {/* Image */}
-      <div className="h-70 w-full overflow-hidden">
-        <img
-          className="object-cover w-full h-full rounded-xl"
-          src={photoURL || defaultProfile}
-          alt="User profile"
-        />
+      {/* Photo carousel */}
+      <div
+        className="relative h-70 w-full overflow-hidden rounded-xl"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* sliding strip */}
+        <div
+          className="flex h-full"
+          style={{
+            width: `${photoList.length * 100}%`,
+            transform: `translateX(-${(photoIndex * 100) / photoList.length}%)`,
+            transition: "transform 0.4s ease-in-out",
+          }}
+        >
+          {photoList.map((photo, i) => (
+            <div
+              key={i}
+              className="h-full flex-shrink-0"
+              style={{ width: `${100 / photoList.length}%` }}
+            >
+              <img
+                src={photo}
+                alt={`Photo ${i + 1}`}
+                className="object-cover w-full h-full rounded-xl"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* dot indicators */}
+        {photoList.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {photoList.map((_, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                  i === photoIndex ? "bg-white scale-125" : "bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* chevron buttons — desktop only, fade in on hover */}
+        {photoList.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className={`hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 ${
+                isHovered ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <ChevronLeftIcon fontSize="small" />
+            </button>
+            <button
+              onClick={handleNext}
+              className={`hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 ${
+                isHovered ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <ChevronRightIcon fontSize="small" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Details */}
@@ -136,6 +251,7 @@ const ProfileCard = ({ userData, onFetchMore }) => {
             <span className="text-xs">{skills}</span>
           </div>
         )}
+
         {hobbies && (
           <div className="bg-[#4a3845] rounded-xl py-1 px-2">
             <div className="font-bold text-sm">My hobbies beyond work:</div>

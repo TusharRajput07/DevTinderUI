@@ -17,7 +17,9 @@ const HeaderHome = () => {
         }`}
       >
         {/* Logo */}
-        <h1 className="text-xl md:text-2xl font-bold text-white">DevTinder</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white cursor-pointer">
+          DevTinder
+        </h1>
       </div>
     </header>
   );

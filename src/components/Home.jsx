@@ -1,78 +1,85 @@
 import React, { useEffect, useState } from "react";
-import homeBG from "../assets/homeBG.jpg";
 import HeaderHome from "./HeaderHome";
 import { Link } from "react-router-dom";
 import SplitText from "./SplitText";
 import FooterHome from "./FooterHome";
 
+const sections = [
+  {
+    title: "Connect with Like-Minded Developers 🧑‍💻",
+    desc: "Find collaborators who share your passion for code. Whether you're building a side project or searching for a co-founder, DevTinder helps you match with developers who vibe with your tech stack and goals.",
+    align: "left",
+    id: "animateDiv1",
+  },
+  {
+    title: "Swipe. Match. Build. 💬",
+    desc: "Skip the networking fluff. Swipe through developer profiles, match based on interests and skills, and start building cool stuff together. It's like Tinder — minus the awkward dates, plus open-source dreams.",
+    align: "right",
+    id: "animateDiv2",
+  },
+  {
+    title: "From Ideas to Execution ✨",
+    desc: "Got an idea but need a team? DevTinder connects you with talented developers ready to bring your vision to life. Discover coders, designers, and thinkers who want to ship products — not just talk about them.",
+    align: "left",
+    id: "animateDiv3",
+  },
+  {
+    title: "AI-Powered First Impressions 🪄",
+    desc: "Let AI help you stand out. Generate a compelling bio from your skills and hobbies, and get smart icebreakers tailored to each match — so starting a conversation is never awkward again.",
+    align: "right",
+    id: "animateDiv4",
+  },
+  {
+    title: "Real-Time Chat 🔥",
+    desc: "No delays, no friction. Once you match with a developer, jump straight into a real-time conversation. Your next collaborator is one message away.",
+    align: "left",
+    id: "animateDiv5",
+  },
+  {
+    title: "For Developers, By Developers 💻",
+    desc: "Built with the dev community in mind, DevTinder is your go-to space to meet collaborators, join projects, and grow your network — all in one place.",
+    align: "right",
+    id: "animateDiv6",
+  },
+];
+
 const Home = () => {
   const [isVisible, setIsVisible] = useState(false);
-
-  const [visible1, setVisible1] = useState(false);
-  const [visible2, setVisible2] = useState(false);
-  const [visible3, setVisible3] = useState(false);
-  const [visible4, setVisible4] = useState(false);
+  const [visibleSections, setVisibleSections] = useState({});
 
   const handleScroll = () => {
-    const scrollPosition = window.scrollY + window.innerHeight; // how much you have come down
-    const divPosition1 = document.getElementById("animateDiv1").offsetTop; // where the div starts (eg. 2000px)
-    const divPosition2 = document.getElementById("animateDiv2").offsetTop;
-    const divPosition3 = document.getElementById("animateDiv3").offsetTop;
-    const divPosition4 = document.getElementById("animateDiv4").offsetTop;
-
-    // check if the amount you have come down is more than the position where the div starts
-    if (scrollPosition >= divPosition1 + 200) {
-      setVisible1(true);
-    } else {
-      setVisible1(false);
-    }
-
-    if (scrollPosition >= divPosition2 + 200) {
-      setVisible2(true);
-    } else {
-      setVisible2(false);
-    }
-
-    if (scrollPosition >= divPosition3 + 200) {
-      setVisible3(true);
-    } else {
-      setVisible3(false);
-    }
-
-    if (scrollPosition >= divPosition4 + 200) {
-      setVisible4(true);
-    } else {
-      setVisible4(false);
-    }
+    const scrollPosition = window.scrollY + window.innerHeight;
+    sections.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el && scrollPosition >= el.offsetTop + 150) {
+        setVisibleSections((prev) => ({ ...prev, [s.id]: true }));
+      }
+    });
   };
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setIsVisible(true);
-    });
+    requestAnimationFrame(() => setIsVisible(true));
   }, []);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <>
       <HeaderHome />
+
+      {/* Hero */}
       <div className="relative h-[100vh] text-gray-300 w-full">
         <div className="w-full h-full overflow-hidden">
           <img
             className={`w-full h-full object-cover brightness-50 transition-all duration-1000 ease-in-out ${
               isVisible ? "opacity-100 scale-[100%]" : "opacity-0 scale-[130%]"
             }`}
-            // src="https://i.pinimg.com/originals/9f/72/f8/9f72f8a50440bddc3bcc2ad12fbcf4c0.gif"
             src="https://i.pinimg.com/originals/23/84/7c/23847ca0d98c0291cc6575ace24e727a.gif"
           />
         </div>
-
         <div className="absolute top-0 w-full h-[100vh] z-10 flex flex-col items-center justify-center pt-0 md:pt-10">
           <div className="text-5xl md:text-8xl text-white font-extrabold text-center">
             <SplitText className="text-white">DevTinder</SplitText>
@@ -84,16 +91,12 @@ const Home = () => {
           </div>
           <div className="text-sm md:text-base font-light text-center">
             <SplitText>
-              Code, collaborate, connect—your developer circle starts here
+              Code, collaborate, connect — your developer circle starts here
             </SplitText>
           </div>
           <Link to="/login">
             <div
-              className={`text-white text-xl font-medium mt-8 w-fit rounded-full cursor-pointer hover:shadow-lg bg-gradient-to-r from-[#753762] to-[#4b1745] animate-gradient transition-all duration-700 ease-in-out delay-500 ${
-                isVisible
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 translate-y-20"
-              }`}
+              className={`text-white text-xl font-medium mt-8 w-fit rounded-full cursor-pointer hover:shadow-lg bg-gradient-to-r from-[#753762] to-[#4b1745] animate-gradient transition-all duration-700 ease-in-out delay-500 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-y-20"}`}
             >
               <div className="px-10 py-4 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
                 Let's get started
@@ -102,90 +105,58 @@ const Home = () => {
           </Link>
         </div>
       </div>
-      <div className="w-full flex flex-col gap-7 md:gap-20 bg-[#291424] py-10 md:py-20 px-3 md:px-10 text-white">
-        <div className="flex justify-start">
-          <div
-            id="animateDiv1"
-            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
-              visible1
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-          >
-            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
-              Connect with Like-Minded Developers 🧑‍💻
-            </div>
-            <div className="text-base font-light">
-              Find collaborators who share your passion for code. Whether you're
-              building a side project or searching for a co-founder, devTinder
-              helps you match with developers who vibe with your tech stack and
-              goals.
-            </div>
+
+      {/* Sections */}
+      <div className="w-full bg-[#291424] py-16 md:py-24 px-6 md:px-20 text-white flex flex-col gap-10 md:gap-16">
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-widest text-[#c084fc] mb-3 font-semibold">
+            Why DevTinder
           </div>
+          <h2 className="text-3xl md:text-5xl font-extrabold">
+            Everything you need to
+            <span className="bg-gradient-to-r from-[#c084fc] to-[#753762] bg-clip-text text-transparent">
+              {" "}
+              find your people
+            </span>
+          </h2>
         </div>
 
-        <div className="flex justify-end">
+        {sections.map((s) => (
           <div
-            id="animateDiv2"
-            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
-              visible2
+            key={s.id}
+            id={s.id}
+            className={`flex justify-${s.align === "right" ? "end" : "start"} transition-all duration-700 ease-in-out ${
+              visibleSections[s.id]
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
-              Swipe. Match. Build. 💬
-            </div>
-            <div className="text-base font-light">
-              Skip the networking fluff. Just swipe through developer profiles,
-              match based on interests and skills, and start building cool stuff
-              together. It’s like Tinder—minus the awkward dates, plus
-              open-source dreams.
+            <div className="w-full md:w-1/2 p-2">
+              <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
+                {s.title}
+              </div>
+              <div className="text-base font-light text-[#b0b0b0]">
+                {s.desc}
+              </div>
             </div>
           </div>
-        </div>
+        ))}
 
-        <div className="flex justify-start">
-          <div
-            id="animateDiv3"
-            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
-              visible3
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-          >
-            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
-              From Ideas to Execution ✨
-            </div>
-            <div className="text-base font-light">
-              Got an idea but need a team? devTinder connects you with talented
-              developers ready to bring your vision to life. Discover coders,
-              designers, and thinkers who want to ship products—not just talk
-              about them.
-            </div>
+        {/* CTA */}
+        <div className="flex flex-col items-center gap-4 pt-8">
+          <div className="text-2xl md:text-3xl font-extrabold text-center">
+            Ready to find your developer match?
           </div>
-        </div>
-
-        <div className="flex justify-end">
-          <div
-            id="animateDiv4"
-            className={`w-full md:w-1/2 p-2 transition-all duration-700 ease-in-out ${
-              visible4
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-          >
-            <div className="text-2xl md:text-4xl font-bold mb-1 md:mb-4">
-              For Developers, By Developers 🪄
+          <Link to="/login">
+            <div className="bg-gradient-to-r from-[#753762] to-[#4b1745] text-white text-xl font-medium rounded-full cursor-pointer hover:shadow-lg">
+              <div className="px-10 py-4 flex justify-center items-center hover:scale-[90%] transition-all duration-150 ease-in-out">
+                Get Started for Free
+              </div>
             </div>
-            <div className="text-base font-light">
-              Built with the dev community in mind, devTinder is your go-to
-              space to meet collaborators, join projects, and grow your
-              network—all in one place.
-            </div>
-          </div>
+          </Link>
         </div>
       </div>
+
       <FooterHome />
     </>
   );

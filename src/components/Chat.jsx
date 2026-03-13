@@ -6,6 +6,12 @@ import { BASE_URL } from "../utils/constants";
 import defaultProfile from "../assets/defaultProfile.webp";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SendIcon from "@mui/icons-material/Send";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import CloseIcon from "@mui/icons-material/Close";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CircularProgress from "@mui/material/CircularProgress";
 import { clearUnread, markLastMessage } from "../utils/unreadSlice";
 import { getSocket } from "../utils/socket";
 
@@ -38,18 +44,15 @@ const ContactsList = ({ userMatches, userId, onSelectContact, unreadData }) => {
               unreadData[match._id]?.lastMessage ||
               match.bio?.slice(0, 40) ||
               "Start a conversation!";
-
             return (
               <div
                 key={match._id}
                 onClick={() => onSelectContact(match._id)}
-                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-150 hover:bg-[#2e1a28] ${
-                  userId === match._id ? "bg-[#3d2438]" : ""
-                } ${unreadCount > 0 && userId !== match._id ? "bg-[#2e1a28]" : ""}`}
+                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-150 hover:bg-[#2e1a28] ${userId === match._id ? "bg-[#3d2438]" : ""} ${unreadCount > 0 && userId !== match._id ? "bg-[#2e1a28]" : ""}`}
               >
                 <div className="relative flex-shrink-0">
                   <img
-                    src={match.photoURL || defaultProfile}
+                    src={match.photos?.[0] || defaultProfile}
                     alt={match.firstName}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -98,6 +101,235 @@ const EmptyChat = () => (
   </div>
 );
 
+// ─── Profile Modal ────────────────────────────────────────────────────────────
+const ProfileModal = ({ user, onClose }) => {
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const touchStartX = useRef(null);
+
+  const photoList = user?.photos?.filter(Boolean).length
+    ? user.photos.filter(Boolean)
+    : [defaultProfile];
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((p) => (p - 1 + photoList.length) % photoList.length);
+  };
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setPhotoIndex((p) => (p + 1) % photoList.length);
+  };
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setPhotoIndex((p) => (p + 1) % photoList.length);
+      else setPhotoIndex((p) => (p - 1 + photoList.length) % photoList.length);
+    }
+    touchStartX.current = null;
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm bg-[#4f404b] text-[#f0f0f0] rounded-2xl shadow-lg flex flex-col overflow-hidden"
+        style={{ maxHeight: "calc(100vh - 40px)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="overflow-y-auto flex flex-col p-2 pb-4">
+          {/* close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-20 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 transition-all duration-150"
+          >
+            <CloseIcon fontSize="small" />
+          </button>
+
+          {/* Photo carousel */}
+          <div
+            className="relative h-70 w-full overflow-hidden rounded-xl"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {!imageLoaded && (
+              <div className="w-full h-full rounded-xl bg-[#726f71] flex items-center justify-center absolute inset-0 z-10">
+                <CircularProgress style={{ color: "white" }} />
+              </div>
+            )}
+            <div
+              className="flex h-full"
+              style={{
+                width: `${photoList.length * 100}%`,
+                transform: `translateX(-${(photoIndex * 100) / photoList.length}%)`,
+                transition: "transform 0.4s ease-in-out",
+              }}
+            >
+              {photoList.map((photo, i) => (
+                <div
+                  key={i}
+                  className="h-full flex-shrink-0"
+                  style={{ width: `${100 / photoList.length}%` }}
+                >
+                  <img
+                    src={photo}
+                    alt={`Photo ${i + 1}`}
+                    className="object-cover w-full h-full rounded-xl"
+                    onLoad={() => {
+                      if (i === 0) setImageLoaded(true);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {photoList.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {photoList.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${i === photoIndex ? "bg-white scale-125" : "bg-white/40"}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {photoList.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrev}
+                  className={`hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 z-10 ${isHovered ? "opacity-100" : "opacity-0"}`}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className={`hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white rounded-full p-0.5 transition-all duration-200 z-10 ${isHovered ? "opacity-100" : "opacity-0"}`}
+                >
+                  <ChevronRightIcon fontSize="small" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Details */}
+          <div className="pt-4 pb-2 px-2 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                {user.firstName + " " + user.lastName}
+                {user.age ? ", " + user.age : ""}
+              </h2>
+              <span className="text-sm">{user.gender}</span>
+            </div>
+            {user.bio && (
+              <p className="text-sm bg-[#4a3845] rounded-xl py-1 px-2">
+                {user.bio}
+              </p>
+            )}
+            {user.userLocation && (
+              <div className="text-sm text-[#acabac] bg-[#4a3845] rounded-xl py-1 px-2">
+                <LocationOnIcon fontSize="small" className="pb-1" />
+                <span>{user.userLocation}</span>
+              </div>
+            )}
+            {user.skills && (
+              <div className="bg-[#4a3845] rounded-xl py-1 px-2">
+                <div className="font-bold text-sm">My professional skills:</div>
+                <span className="text-xs">{user.skills}</span>
+              </div>
+            )}
+            {user.hobbies && (
+              <div className="bg-[#4a3845] rounded-xl py-1 px-2">
+                <div className="font-bold text-sm">My hobbies beyond work:</div>
+                <span className="text-xs">{user.hobbies}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Icebreaker Suggestions ───────────────────────────────────────────────────
+const IcebreakerSuggestions = ({ activeChatUser, onSelect }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const fetchIcebreakers = async () => {
+    setLoading(true);
+    try {
+      const res = await api.post(
+        BASE_URL + "/ai/icebreaker",
+        {
+          targetFirstName: activeChatUser.firstName,
+          targetSkills: activeChatUser.skills || "",
+          targetHobbies: activeChatUser.hobbies || "",
+          targetBio: activeChatUser.bio || "",
+        },
+        { withCredentials: true },
+      );
+      setSuggestions(res?.data?.suggestions || []);
+      setFetched(true);
+    } catch (err) {
+      console.error("Icebreaker fetch failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center mt-8 px-4 gap-3">
+      <div className="text-center text-[#9a8a95] text-sm">
+        No messages yet. Say hi! 👋
+      </div>
+      {!fetched ? (
+        <button
+          onClick={fetchIcebreakers}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#c084fc] text-[#c084fc] hover:bg-[#c084fc] hover:text-white disabled:opacity-50 transition-all duration-200 text-sm font-medium cursor-pointer mt-2"
+        >
+          <AutoAwesomeIcon style={{ fontSize: 16 }} />
+          {loading ? "Generating ideas..." : "Suggest an opening message"}
+        </button>
+      ) : (
+        <div className="w-full max-w-sm flex flex-col gap-2 mt-2">
+          <div className="flex items-center gap-1 text-xs text-[#c084fc] mb-1">
+            <AutoAwesomeIcon style={{ fontSize: 12 }} />
+            <span>AI suggestions — click one to use it</span>
+          </div>
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => onSelect(s)}
+              className="text-left text-sm text-[#f0f0f0] bg-[#3d2438] hover:bg-[#4b1745] px-4 py-2 rounded-2xl transition-all duration-150 cursor-pointer"
+            >
+              {s}
+            </button>
+          ))}
+          <button
+            onClick={fetchIcebreakers}
+            disabled={loading}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-[#3d2438] text-[#9a8a95] hover:border-[#c084fc] hover:text-[#c084fc] disabled:opacity-50 transition-all duration-200 text-xs cursor-pointer mt-1"
+          >
+            <AutoAwesomeIcon style={{ fontSize: 12 }} />
+            {loading ? "Regenerating..." : "Regenerate"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Chat Window ──────────────────────────────────────────────────────────────
 const ChatWindow = ({
   activeChatUser,
@@ -108,6 +340,7 @@ const ChatWindow = ({
   onBack,
   loggedInUser,
   messagesEndRef,
+  onShowProfile,
 }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -118,6 +351,7 @@ const ChatWindow = ({
 
   return (
     <div className="flex-1 flex flex-col bg-[#291424] overflow-hidden">
+      {/* ── header — click to view profile ── */}
       <div className="flex items-center gap-3 px-4 py-3 bg-[#1e0f1a] border-b border-[#3d2438] flex-shrink-0">
         <button
           onClick={onBack}
@@ -126,9 +360,12 @@ const ChatWindow = ({
           <ArrowBackIcon fontSize="small" />
         </button>
         {activeChatUser && (
-          <>
+          <div
+            className="flex items-center gap-3 flex-1 cursor-pointer hover:opacity-80 transition-opacity duration-150"
+            onClick={onShowProfile}
+          >
             <img
-              src={activeChatUser.photoURL || defaultProfile}
+              src={activeChatUser.photos?.[0] || defaultProfile}
               alt={activeChatUser.firstName}
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -137,47 +374,51 @@ const ChatWindow = ({
                 {activeChatUser.firstName + " " + activeChatUser.lastName}
               </div>
               <div className="text-xs text-[#9a8a95]">
-                {activeChatUser.userLocation || ""}
+                {activeChatUser.userLocation || "Tap to view profile"}
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
+      {/* messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2">
-        {messages.length === 0 && (
-          <div className="text-center text-[#9a8a95] text-sm mt-10">
-            No messages yet. Say hi! 👋
-          </div>
-        )}
-        {messages.map((msg) => {
-          const isMe =
-            msg.senderId === loggedInUser?._id ||
-            msg.senderId?.toString() === loggedInUser?._id?.toString();
-          return (
-            <div
-              key={msg._id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
+        {messages.length === 0 && activeChatUser ? (
+          <IcebreakerSuggestions
+            activeChatUser={activeChatUser}
+            onSelect={(s) => setText(s)}
+          />
+        ) : (
+          messages.map((msg) => {
+            const isMe =
+              msg.senderId === loggedInUser?._id ||
+              msg.senderId?.toString() === loggedInUser?._id?.toString();
+            return (
               <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${isMe ? "bg-[#4b1745] text-white rounded-br-sm" : "bg-[#4f404b] text-[#f0f0f0] rounded-bl-sm"}`}
+                key={msg._id}
+                className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
-                <div>{msg.text}</div>
                 <div
-                  className={`text-xs mt-1 ${isMe ? "text-[#c9a0c4]" : "text-[#9a8a95]"}`}
+                  className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${isMe ? "bg-[#4b1745] text-white rounded-br-sm" : "bg-[#4f404b] text-[#f0f0f0] rounded-bl-sm"}`}
                 >
-                  {new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  <div>{msg.text}</div>
+                  <div
+                    className={`text-xs mt-1 ${isMe ? "text-[#c9a0c4]" : "text-[#9a8a95]"}`}
+                  >
+                    {new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 
+      {/* input */}
       <div className="px-4 py-3 bg-[#1e0f1a] border-t border-[#3d2438] flex items-center gap-3 flex-shrink-0">
         <input
           value={text}
@@ -211,6 +452,7 @@ const Chat = () => {
   const [text, setText] = useState("");
   const [activeChatUser, setActiveChatUser] = useState(null);
   const [isMobileContactsOpen, setIsMobileContactsOpen] = useState(!userId);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const messagesEndRef = useRef(null);
   const userIdRef = useRef(userId);
 
@@ -225,14 +467,10 @@ const Chat = () => {
     }
   }, [userId, userMatches]);
 
-  // mark as seen in DB + clear unread in Redux when opening a chat
   useEffect(() => {
     if (!userId) return;
-
     setIsMobileContactsOpen(false);
     dispatch(clearUnread(userId));
-
-    // tell the server this conversation has been seen
     api
       .patch(BASE_URL + "/chat/seen/" + userId, {}, { withCredentials: true })
       .catch((err) => console.log("Failed to mark as seen", err));
@@ -295,7 +533,6 @@ const Chat = () => {
             time: message.createdAt,
           }),
         );
-        // if receiving a message while chat is open, mark as seen immediately
         if (senderId !== myId) {
           api
             .patch(
@@ -309,10 +546,7 @@ const Chat = () => {
     };
 
     socket.on("receiveMessage", handleMessage);
-
-    return () => {
-      socket.off("receiveMessage", handleMessage);
-    };
+    return () => socket.off("receiveMessage", handleMessage);
   }, [userId, loggedInUser]);
 
   const sendMessage = () => {
@@ -322,15 +556,22 @@ const Chat = () => {
     setText("");
   };
 
-  const handleSelectContact = (matchId) => {
-    navigate("/chat/" + matchId);
-  };
+  const handleSelectContact = (matchId) => navigate("/chat/" + matchId);
 
   return (
     <div
       className="flex overflow-hidden"
       style={{ height: "calc(100vh - 64px)" }}
     >
+      {/* ── Profile Modal ── */}
+      {showProfileModal && activeChatUser && (
+        <ProfileModal
+          user={activeChatUser}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
+
+      {/* mobile */}
       <div className="flex w-full md:hidden h-full">
         {isMobileContactsOpen ? (
           <ContactsList
@@ -349,9 +590,12 @@ const Chat = () => {
             onBack={() => setIsMobileContactsOpen(true)}
             loggedInUser={loggedInUser}
             messagesEndRef={messagesEndRef}
+            onShowProfile={() => setShowProfileModal(true)}
           />
         )}
       </div>
+
+      {/* desktop */}
       <div className="hidden md:flex w-full h-full">
         <ContactsList
           userMatches={userMatches}
@@ -369,6 +613,7 @@ const Chat = () => {
             onBack={() => setIsMobileContactsOpen(true)}
             loggedInUser={loggedInUser}
             messagesEndRef={messagesEndRef}
+            onShowProfile={() => setShowProfileModal(true)}
           />
         ) : (
           <EmptyChat />
